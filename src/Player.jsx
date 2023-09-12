@@ -1,12 +1,16 @@
 import { RigidBody, useRapier } from "@react-three/rapier";
 import { useFrame } from "@react-three/fiber";
 import { useKeyboardControls } from "@react-three/drei";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import * as THREE from "three";
 
 export default function Player() {
   const body = useRef();
   const [subscribeKeys, getKeys] = useKeyboardControls();
   const { rapier, world } = useRapier();
+
+  const [smoothCameraPosition] = useState(() => new THREE.Vector3(10, 10, 10)); // start position of camera in here
+  const [smoothCameraTarget] = useState(() => new THREE.Vector3());
 
   //jump function
   const jump = () => {
@@ -39,6 +43,10 @@ export default function Player() {
   });
 
   useFrame((state, delta) => {
+    /**
+     * Controls
+     */
+
     const { forward, backward, leftward, rightward, jump } = getKeys();
 
     //prepare variables before because two keys can be pressed at the same time
@@ -68,6 +76,29 @@ export default function Player() {
 
     body.current.applyImpulse(impulse);
     body.current.applyTorqueImpulse(torque);
+
+    /**
+     * Camera
+     */
+
+    // TO DO: make camera focus on building when you draw near (ex. you are cycling next to the bar)
+    const bodyPosition = body.current.translation();
+
+    const cameraPosition = new THREE.Vector3();
+    cameraPosition.copy(bodyPosition);
+
+    cameraPosition.z += 5; // distance camera
+    cameraPosition.y += 0.6; // rotation camera
+
+    const cameraTarget = new THREE.Vector3();
+    cameraTarget.copy(bodyPosition);
+    cameraTarget.y += 0.25; // set camera target look at y position
+
+    smoothCameraPosition.lerp(cameraPosition, 5 * delta); // move current value bit closer (1/10th) to destination value, otherwise it lags behind
+    smoothCameraTarget.lerp(cameraTarget, 5 * delta); // move current value bit closer (1/10th) to destination value, otherwise it lags behind
+
+    state.camera.position.copy(smoothCameraPosition);
+    state.camera.lookAt(smoothCameraTarget);
   });
 
   return (

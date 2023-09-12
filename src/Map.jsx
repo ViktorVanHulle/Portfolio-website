@@ -7,7 +7,7 @@ export default function Map() {
       <RigidBody type="fixed">
         <mesh receiveShadow position={[0, -0.1, 0]}>
           {/* <cylinderGeometry args={[5, 5, 1, 32]} /> */}
-          <boxGeometry args={[10, 1, 10]} />
+          <boxGeometry args={[8, 1, 20]} />
           <meshStandardMaterial color="limegreen" />
         </mesh>
       </RigidBody>

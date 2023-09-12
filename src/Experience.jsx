@@ -1,4 +1,4 @@
-import { OrbitControls } from "@react-three/drei";
+// import { OrbitControls } from "@react-three/drei";
 import { Physics } from "@react-three/rapier";
 import Player from "./Player";
 import Lights from "./Lights";
@@ -8,7 +8,7 @@ export default function Experience() {
   return (
     <>
       <color args={["#24a2a1"]} attach="background" />
-      <OrbitControls makeDefault />
+      {/* <OrbitControls makeDefault /> */}
 
       <Lights />
 
