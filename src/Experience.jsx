@@ -12,7 +12,7 @@ export default function Experience() {
 
       <Lights />
 
-      <Physics>
+      <Physics debug={false}>
         <Map />
         <Player />
       </Physics>
