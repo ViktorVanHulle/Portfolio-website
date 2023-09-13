@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { useKeyboardControls } from "@react-three/drei";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import useGame from "./stores/useGame";
 
 export default function Player() {
   const body = useRef();
@@ -11,6 +12,16 @@ export default function Player() {
 
   const [smoothCameraPosition] = useState(() => new THREE.Vector3(10, 10, 10)); // start position of camera in here
   const [smoothCameraTarget] = useState(() => new THREE.Vector3());
+
+  const start = useGame((state) => state.start);
+  const restart = useGame((state) => state.restart);
+  const end = useGame((state) => state.end);
+
+  const reset = () => { //reset to start position
+    body.current.setTranslation({ x: 0, y: 1, z: 0 });
+    body.current.setLinvel({ x: 0, y: 0, z: 0 });
+    body.current.setAngvel({ x: 0, y: 0, z: 0 });
+  };
 
   //jump function
   const jump = () => {
@@ -26,6 +37,15 @@ export default function Player() {
   };
 
   useEffect(() => {
+    const unsubscribeReset = useGame.subscribe(
+      (state) => state.phase,
+      (phase) => {
+        if (phase === "ready") {
+          reset();
+        }
+      }
+    );
+
     const unsubscribeJump = subscribeKeys(
       // key listener on jump (selector)
       (state) => state.jump,
@@ -36,9 +56,15 @@ export default function Player() {
       }
     );
 
-    //when component is being destroyed (clean up)
+    const unsubscribeAny = subscribeKeys(() => {
+      start();
+    });
+
+    //when component is being destroyed (clean subscriptions)
     return () => {
       unsubscribeJump();
+      unsubscribeAny();
+      unsubscribeReset();
     };
   });
 
@@ -99,6 +125,14 @@ export default function Player() {
 
     state.camera.position.copy(smoothCameraPosition);
     state.camera.lookAt(smoothCameraTarget);
+
+    /**
+     * Phases
+     */
+    //TO DO: if zoomed out then make state 'end'
+    //TO DO: if bar is clicked then make state 'end'
+
+    if (bodyPosition.y < -4) restart();
   });
 
   return (
